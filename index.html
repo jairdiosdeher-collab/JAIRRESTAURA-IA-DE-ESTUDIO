@@ -48,7 +48,54 @@
     }
 
     * { box-sizing: border-box; margin: 0; padding: 0; }
+<div id="audioPlayer">
 
+<div id="audioTitle">
+🔊 Hércules Audio
+</div>
+
+<div id="audioStatus">
+Listo para leer
+</div>
+
+<div class="audio-controls">
+
+<button onclick="playSpeech()">
+▶️
+</button>
+
+<button onclick="pauseSpeech()">
+⏸️
+</button>
+
+<button onclick="resumeSpeech()">
+⏯️
+</button>
+
+<button onclick="stopSpeech()">
+⏹️
+</button>
+
+<button
+class="btn"
+onclick="toggleDarkMode()"
+id="themeBtn">
+
+🌙 Oscuro
+
+</button>
+
+<select id="speechRate">
+
+<option value="0.7">0.7x</option>
+<option value="1" selected>1x</option>
+<option value="1.2">1.2x</option>
+<option value="1.5">1.5x</option>
+<option value="2">2x</option>
+
+</select>
+
+</div>
     body {
       font-family: 'Public Sans', system-ui, -apple-system, sans-serif;
       background: var(--bg-primary);
@@ -428,7 +475,62 @@
       box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.45);
       transition: all 0.28s ease;
     }
+    
   </style>
+  #audioPlayer{
+
+position:fixed;
+bottom:20px;
+right:20px;
+
+width:280px;
+
+background:var(--bg-surface);
+
+border:1px solid var(--border);
+
+padding:15px;
+
+border-radius:16px;
+
+box-shadow:var(--shadow);
+
+z-index:9999;
+
+}
+
+#audioTitle{
+font-weight:700;
+margin-bottom:8px;
+}
+
+#audioStatus{
+font-size:.8rem;
+margin-bottom:10px;
+color:var(--text-secondary);
+}
+
+.audio-controls{
+display:flex;
+gap:8px;
+margin-bottom:10px;
+}
+
+.audio-controls button{
+
+cursor:pointer;
+
+border:none;
+
+padding:8px 12px;
+
+border-radius:8px;
+
+background:var(--accent);
+
+color:#fff;
+
+}
 </head>
 <body>
 
@@ -750,7 +852,105 @@
       </div>
     </div>
   </div>
+let currentSpeech = null;
 
+function readText(text){
+
+if(!text) return;
+
+speechSynthesis.cancel();
+
+currentSpeech =
+new SpeechSynthesisUtterance(text);
+
+currentSpeech.lang = "es-ES";
+
+currentSpeech.rate =
+parseFloat(
+document.getElementById(
+"speechRate"
+).value
+);
+
+document
+.getElementById(
+"audioStatus"
+)
+.textContent =
+"Leyendo...";
+
+currentSpeech.onend = ()=>{
+
+document
+.getElementById(
+"audioStatus"
+)
+.textContent =
+"Lectura finalizada";
+
+};
+
+speechSynthesis.speak(
+currentSpeech
+);
+
+}
+
+function playSpeech(){
+
+const resumen =
+document.getElementById(
+"resumenOverview"
+);
+
+if(resumen){
+
+readText(
+resumen.innerText
+);
+
+}
+
+}
+
+function pauseSpeech(){
+
+speechSynthesis.pause();
+
+document
+.getElementById(
+"audioStatus"
+)
+.textContent =
+"Pausado";
+
+}
+
+function resumeSpeech(){
+
+speechSynthesis.resume();
+
+document
+.getElementById(
+"audioStatus"
+)
+.textContent =
+"Reanudado";
+
+}
+
+function stopSpeech(){
+
+speechSynthesis.cancel();
+
+document
+.getElementById(
+"audioStatus"
+)
+.textContent =
+"Detenido";
+
+}
   <script>
     if (window.pdfjsLib) {
       window.pdfjsLib.GlobalWorkerOptions.workerSrc =
@@ -1269,7 +1469,16 @@
 
       document.getElementById('resumenOverview').textContent = a.overview;
       document.getElementById('resumenList').innerHTML = a.keyFindings.map((f) => `<li style="margin-bottom:0.45rem;">${escapeHtml(f)}</li>`).join('');
-
+<button
+class="btn btn-primary"
+onclick="
+readText(
+document.getElementById(
+'resumenOverview'
+).innerText
+)">
+🔊 Escuchar Resumen
+</button>
       // Capítulos
       document.getElementById('chaptersContainer').innerHTML = a.chapters.map((ch) => `
         <div class="card">
@@ -1279,7 +1488,16 @@
           <p style="font-size:0.86rem;">${escapeHtml(ch.detailedContent)}</p>
         </div>
       `).join('');
-
+<button
+class="btn"
+onclick="
+readText(
+`${escapeHtml(ch.title)}
+${escapeHtml(ch.summary)}
+${escapeHtml(ch.detailedContent)}`
+)">
+🔊 Escuchar
+</button>
       // Curso
       document.getElementById('courseContainer').innerHTML = a.chapters.map((ch, idx) => `
         <div class="card" style="display:flex; justify-content:space-between; align-items:flex-start; gap:1rem;">
@@ -1982,3 +2200,37 @@ REGLAS PEDAGÓGICAS OBLIGATORIAS:
   </script>
 </body>
 </html>
+@media(max-width:768px){
+
+.sidebar{
+display:none;
+}
+
+.main-area{
+padding:1rem;
+}
+
+#audioPlayer{
+
+left:10px;
+right:10px;
+
+width:auto;
+
+bottom:10px;
+
+}
+
+.topbar{
+
+padding:10px;
+
+}
+
+.chat-box{
+
+height:250px;
+
+}
+
+}
